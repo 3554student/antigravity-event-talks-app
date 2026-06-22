@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BigQuery Release Notes Hub</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- App Container -->
+    <div class="app-container">
+        
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo-area">
+                <div class="bq-logo-icon">
+                    <i data-lucide="database" class="icon-pulse"></i>
+                </div>
+                <div class="logo-text">
+                    <h1>BigQuery <span>Release Notes</span></h1>
+                    <p class="tagline">Stay updated with Google Cloud BigQuery changes</p>
+                </div>
+            </div>
+            
+            <div class="header-actions">
+                <div class="refresh-container">
+                    <span id="last-updated" class="last-updated-text">Updating...</span>
+                    <button id="refresh-btn" class="btn btn-secondary btn-icon" title="Refresh release notes">
+                        <i data-lucide="refresh-cw" id="refresh-icon"></i>
+                        <span>Refresh</span>
+                    </button>
+                </div>
+                <button id="theme-toggle" class="btn btn-icon-only" title="Toggle theme">
+                    <i data-lucide="sun" id="theme-sun"></i>
+                    <i data-lucide="moon" id="theme-moon" style="display: none;"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Body -->
+        <main class="app-main">
+            <!-- Filter Bar -->
+            <section class="filter-section">
+                <div class="search-box">
+                    <i data-lucide="search" class="search-icon"></i>
+                    <input type="text" id="search-input" placeholder="Search updates (e.g., 'embeddings', 'DTS', 'SQL')..." autocomplete="off">
+                    <button id="clear-search" class="clear-btn" style="display: none;">
+                        <i data-lucide="x"></i>
+                    </button>
+                </div>
+                
+                <div class="filter-tabs-container">
+                    <div class="filter-tabs" id="type-tabs">
+                        <button class="tab-btn active" data-type="all">
+                            <span>All Updates</span>
+                            <span class="count-badge" id="count-all">0</span>
+                        </button>
+                        <button class="tab-btn" data-type="feature">
+                            <span class="indicator feature"></span>
+                            <span>Features</span>
+                            <span class="count-badge" id="count-feature">0</span>
+                        </button>
+                        <button class="tab-btn" data-type="announcement">
+                            <span class="indicator announcement"></span>
+                            <span>Announcements</span>
+                            <span class="count-badge" id="count-announcement">0</span>
+                        </button>
+                        <button class="tab-btn" data-type="issue">
+                            <span class="indicator issue"></span>
+                            <span>Issues</span>
+                            <span class="count-badge" id="count-issue">0</span>
+                        </button>
+                        <button class="tab-btn" data-type="deprecation">
+                            <span class="indicator deprecation"></span>
+                            <span>Deprecations</span>
+                            <span class="count-badge" id="count-deprecation">0</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Grid & Content -->
+            <section class="content-section">
+                <!-- Loader -->
+                <div id="loader" class="loader-container">
+                    <div class="glowing-spinner"></div>
+                    <p>Fetching the latest release notes...</p>
+                </div>
+
+                <!-- Empty State -->
+                <div id="empty-state" class="empty-state" style="display: none;">
+                    <div class="empty-icon-wrap">
+                        <i data-lucide="search-code"></i>
+                    </div>
+                    <h3>No release notes found</h3>
+                    <p>Try searching for a different keyword or check your internet connection.</p>
+                    <button id="reset-filters-btn" class="btn btn-primary">Reset Filters</button>
+                </div>
+
+                <!-- Cards Grid -->
+                <div id="notes-grid" class="notes-grid" style="display: none;">
+                    <!-- Javascript will populate cards here -->
+                </div>
+            </section>
+        </main>
+        
+        <!-- Tweet Drawer Panel (Slides up when a card is selected) -->
+        <footer id="tweet-drawer" class="tweet-drawer">
+            <div class="drawer-content">
+                <div class="drawer-header">
+                    <div class="drawer-title">
+                        <i data-lucide="twitter" class="twitter-icon-blue"></i>
+                        <h3>Share Update to Twitter</h3>
+                    </div>
+                    <button id="close-drawer" class="btn-close" title="Deselect update">
+                        <i data-lucide="x"></i>
+                    </button>
+                </div>
+                <div class="drawer-body">
+                    <div class="tweet-composer-area">
+                        <textarea id="tweet-textarea" placeholder="What's happening?" maxlength="280"></textarea>
+                        <div class="tweet-meta">
+                            <div class="character-progress-wrap">
+                                <svg class="progress-ring" width="24" height="24">
+                                    <circle class="progress-ring__circle-bg" stroke="#e2e8f0" stroke-width="2.5" fill="transparent" r="10" cx="12" cy="12"/>
+                                    <circle id="char-progress-circle" class="progress-ring__circle" stroke="#3b82f6" stroke-width="2.5" fill="transparent" r="10" cx="12" cy="12"/>
+                                </svg>
+                                <span id="char-counter" class="char-counter">280</span>
+                            </div>
+                            <div class="action-buttons">
+                                <button id="btn-cancel-tweet" class="btn btn-ghost">Cancel</button>
+                                <button id="btn-send-tweet" class="btn btn-twitter">
+                                    <i data-lucide="send"></i>
+                                    <span>Tweet</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- JavaScript File -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
